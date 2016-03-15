@@ -8,3 +8,4 @@ See Example_Visualization for an example of how to format submissions. It is not
 2. A brief description of what the visualization is and how you think it will be useful
 3. Display of code that you used to set the visual up
 4. Display of how your data was formatted
+5. Include name(s) of contributor(s)
