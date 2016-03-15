@@ -15,11 +15,11 @@
       $(document).ready(function() {        
         var sankey = new Sankey();
       
-        sankey.stack(0,["Top","Bottom"]);
+        sankey.stack(0,["Goodwill NWNC","Bottom"]);
         sankey.stack(1,["Merge"]);
         sankey.stack(2,["Good","Bad"]);
       
-        sankey.setData([["Top",100,"Merge"],["Bottom",50,"Merge"],["Merge",70,"Good"],["Merge",80,"Bad"]]);
+        sankey.setData([["Goodwill NWNC",100,"Merge"],["Bottom",50,"Merge"],["Merge",70,"Good"],["Merge",80,"Bad"]]);
         sankey.draw();
         
         $( "#slider" ).slider({
@@ -28,14 +28,14 @@
           value: 100,
           animate: true,
           slide: function(event,ui) {
-            sankey.updateData([["Top",ui.value,"Merge"],["Merge",70+(ui.value-100),"Good"]]);
+            sankey.updateData([["Goodwill NWNC",ui.value,"Merge"],["Merge",70+(ui.value-100),"Good"],["Bottom",50,"Merge"]]);
             sankey.redraw();
           }
         });
     });
       
     </script>
-    <h1 style='width:1000px; text-align: center; margin-bottom: 0'>A very simple Sankey Diagram with a slider</h1>
+    <h1 style='width:1000px; text-align: center; margin-bottom: 0'>Sankey Diagram with a slider</h1>
     <div style='width:1000px; text-align: center; margin-top: 0'>Move your mouse over the diagram to show values.</div>
     <div style='width:1000px; text-align: center; margin-top: 10px'>Use this slider to adjust the width of the top flow 
       <div id="slider" style='width:300px; margin: 5px auto'></div>

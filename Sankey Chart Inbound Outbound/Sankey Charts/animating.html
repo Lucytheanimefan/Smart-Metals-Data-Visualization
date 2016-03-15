@@ -13,19 +13,20 @@
       $(document).ready(function() {
         var sankey = new Sankey();
       
-        sankey.stack(0,["Top","Bottom","Even lower than bottom"]);
+        sankey.stack(0,["Goodwill NWNC", "Bottom","Even lower than bottom"]);
         sankey.stack(1,["Merge"]);
-        sankey.stack(2,["Good","Bad","Indifferent","Not even indifferent"]);
+        sankey.stack(2,["Gordon Iron & Metal","Smart Metals Recycling","Bad","Indifferent","Not even indifferent"]);
       
-        sankey.setData([["Top",100,"Merge"],["Bottom",50,"Merge"],["Even lower than bottom",30,"Merge"],["Merge",70,"Good"],["Merge",110,"Bad"]]);
+        sankey.setData([["Goodwill NWNC",620,"Merge"],["Bottom",50,"Merge"],["Even lower than bottom",30,"Merge"],["Merge",250,"Gordon Iron & Metal"],["Merge",370, "Smart Metals Recycling"],["Merge",110,"Bad"]]);
         sankey.setBubbles([["Bad",200]]);
         sankey.draw();
       
         setTimeout( function() {
           sankey.updateData([
-            ["Top",10,"Merge"],
-            ["Even lower than bottom",0,"Merge"],
-            ["Merge",10,"Good"],
+            ["Goodwill NWNC",620*.1,"Merge"],
+            ["Even lower than bottom",30,"Merge"],
+            ["Merge",250*.1,"Gordon Iron & Metal"],
+            ["Merge",370*.1,"Smart Metals Recycling"],
             ["Merge",30,"Bad"],
             ["Merge",10,"Indifferent"],
             ["Merge",10,"Not even indifferent"]
@@ -34,9 +35,10 @@
           sankey.redraw();        
         },1000)
     });
+
       
     </script>
-    <h1 style='width:1000px; text-align: center; margin-bottom: 0'>An example Animating Sankey Diagram</h1>
+    <h1 style='width:1000px; text-align: center; margin-bottom: 0'>Inbound outbound animating Sankey Diagram</h1>
     <div style='width:1000px; text-align: center; margin-top: 0'>Move your mouse over the diagram to show values</div>
     <div id='sankey' style="width:1000px;height:1000px">
       &nbsp;
