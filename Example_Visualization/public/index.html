@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<!-- saved from url=(0035)http://bl.ocks.org/mbostock/1308257 -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta charset="utf-8">
+<meta name="viewport" content="width=1000">
+<title>Example Visualization</title>
+<style>
+
+  @import url("/style.css");
+
+</style>
+<style>
+
+.group text {
+  font: 11px sans-serif;
+  pointer-events: none;
+}
+
+.group path {
+  stroke: #000;
+}
+
+path.chord {
+  stroke-width: .75;
+  fill-opacity: .75;
+}
+
+</style>
+
+</head>
+<body cz-shortcut-listen="true"><header>
+  <div class="column">
+    <div class="navigation">
+      <a href="http://bl.ocks.org/">Popular</a>
+      / <a href="http://bl.ocks.org/-/about">About</a>
+    </div>
+    <a class="user" href="http://bl.ocks.org/mbostock"><img class="avatar" src="https://avatars3.githubusercontent.com/u/230541?v=3&s=52" width="30" height="30">Mike Bostock</a>’s
+    Block <a class="gist gist-id self" title="View Gist on GitHub." href="https://gist.github.com/mbostock/1308257">1308257</a>    <div class="date">Updated February 22, 2016</div>
+  </div>
+</header>
+
+<div class="column">
+  <h1>The Euro Debt Crisis</h1>
+  <div class="index">
+    <iframe sandbox="allow-scripts allow-forms allow-same-origin" src="/graph.html" marginwidth="0" marginheight="0" style="height:500px;" scrolling="no"></iframe>
+  </div>
+  <div class="index-pop">
+    <a target="_blank" title="Open Block 1308257 a new window." href="http://bl.ocks.org/mbostock/raw/1308257">Open<svg height="16" width="12"><path d="M11 10h1v3c0 0.55-0.45 1-1 1H1c-0.55 0-1-0.45-1-1V3c0-0.55 0.45-1 1-1h3v1H1v10h10V10zM6 2l2.25 2.25-3.25 3.25 1.5 1.5 3.25-3.25 2.25 2.25V2H6z"></path></svg></a>
+  </div>
+  <div class="gist-readme" data-key="readme.md"><p>Bill Marsh created a nice <a href="http://www.nytimes.com/interactive/2011/10/23/sunday-review/an-overview-of-the-euro-crisis.html">visual guide to the Euro debt crisis</a> in today’s <em>New York Times</em> using a custom graph layout with directed edges. An alternative approach to visualizing asymmetric relationships among a group of entities is a <a href="http://mbostock.github.com/d3/ex/chord.html">chord diagram</a>. Chord diagrams don’t show indirect relationships as well, but they better convey the magnitudes of the debt for each country.</p>
+
+<p>This visualization uses two chord diagrams. The diagram on the left emphasizes how much each country lends (<strong>creditors</strong>); you can see Japan and France are the biggest lenders, but France is also the most exposed by its risky debts to Italy and Greece. The diagram on the right emphasizes how much each country owes (<strong>debtors</strong>); the United States has by far the largest debt, nearly three times the size of the next-largest debtor, Britain!</p>
+
+<p>Built with <a href="http://mbostock.github.com/d3/">D3.js</a>.</p></div>
+  <div class="gist-sources">
+    <div class="gist-source" data-key="graph.html">
+      <h2>graph.html<a name="graph.html" class="anchor" href="http://bl.ocks.org/mbostock/1308257#index.html">#</a></h2>
+      <pre><code class="html xml"><span class="doctype">&lt;!DOCTYPE html&gt;</span>
+<span class="tag">&lt;<span class="title">meta</span> <span class="attribute">charset</span>=<span class="value">"utf-8"</span>&gt;</span>
+<span class="tag">&lt;<span class="title">style</span>&gt;</span><span class="css">
+
+<span class="class">.group</span> <span class="tag">text</span> <span class="rules">{
+  <span class="rule"><span class="attribute">font</span>:<span class="value"> <span class="number">11</span>px sans-serif</span>;</span>
+  <span class="rule"><span class="attribute">pointer-events</span>:<span class="value"> none</span>;</span>
+<span class="rule">}</span></span>
+
+<span class="class">.group</span> <span class="tag">path</span> <span class="rules">{
+  <span class="rule"><span class="attribute">stroke</span>:<span class="value"> <span class="number">#000</span></span>;</span>
+<span class="rule">}</span></span>
+
+<span class="tag">path</span><span class="class">.chord</span> <span class="rules">{
+  <span class="rule"><span class="attribute">stroke-width</span>:<span class="value"> .<span class="number">75</span></span>;</span>
+  <span class="rule"><span class="attribute">fill-opacity</span>:<span class="value"> .<span class="number">75</span></span>;</span>
+<span class="rule">}</span></span>
+
+</span><span class="tag">&lt;/<span class="title">style</span>&gt;</span>
+<span class="tag">&lt;<span class="title">body</span>&gt;</span>
+<span class="tag">&lt;<span class="title">script</span> <span class="attribute">src</span>=<span class="value">"//d3js.org/d3.v3.min.js"</span>&gt;</span><span class="javascript"></span><span class="tag">&lt;/<span class="title">script</span>&gt;</span>
+<span class="tag">&lt;<span class="title">script</span>&gt;</span><span class="javascript">
+
+<span class="keyword">var</span> width = <span class="number">480</span>,
+    height = <span class="number">500</span>,
+    outerRadius = Math.min(width, height) / <span class="number">2</span> - <span class="number">4</span>,
+    innerRadius = outerRadius - <span class="number">20</span>;
+
+<span class="keyword">var</span> format = d3.format(<span class="string">",.3r"</span>);
+
+<span class="comment">// Square matrices, asynchronously loaded; credits is the transpose of debits.</span>
+<span class="keyword">var</span> debits = [],
+    credits = [];
+
+<span class="comment">// The chord layout, for computing the angles of chords and groups.</span>
+<span class="keyword">var</span> layout = d3.layout.chord()
+    .sortGroups(d3.descending)
+    .sortSubgroups(d3.descending)
+    .sortChords(d3.descending)
+    .padding(.<span class="number">04</span>);
+
+<span class="comment">// The color scale, for different categories of “worrisome” risk.</span>
+<span class="keyword">var</span> fill = d3.scale.ordinal()
+    .domain([<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>])
+    .range([<span class="string">"#DB704D"</span>, <span class="string">"#D2D0C6"</span>, <span class="string">"#ECD08D"</span>, <span class="string">"#F8EDD3"</span>]);
+
+<span class="comment">// The arc generator, for the groups.</span>
+<span class="keyword">var</span> arc = d3.svg.arc()
+    .innerRadius(innerRadius)
+    .outerRadius(outerRadius);
+
+<span class="comment">// The chord generator (quadratic Bézier), for the chords.</span>
+<span class="keyword">var</span> chord = d3.svg.chord()
+    .radius(innerRadius);
+
+<span class="comment">// Add an SVG element for each diagram, and translate the origin to the center.</span>
+<span class="keyword">var</span> svg = d3.select(<span class="string">"body"</span>).selectAll(<span class="string">"div"</span>)
+    .data([debits, credits])
+  .enter().append(<span class="string">"div"</span>)
+    .style(<span class="string">"display"</span>, <span class="string">"inline-block"</span>)
+    .style(<span class="string">"width"</span>, width + <span class="string">"px"</span>)
+    .style(<span class="string">"height"</span>, height + <span class="string">"px"</span>)
+  .append(<span class="string">"svg"</span>)
+    .attr(<span class="string">"width"</span>, width)
+    .attr(<span class="string">"height"</span>, height)
+  .append(<span class="string">"g"</span>)
+    .attr(<span class="string">"transform"</span>, <span class="string">"translate("</span> + width / <span class="number">2</span> + <span class="string">","</span> + height / <span class="number">2</span> + <span class="string">")"</span>);
+
+<span class="comment">// Load our data file…</span>
+d3.csv(<span class="string">"debt.csv"</span>, type, <span class="function"><span class="keyword">function</span><span class="params">(error, data)</span> {</span>
+  <span class="keyword">if</span> (error) <span class="keyword">throw</span> error;
+
+  <span class="keyword">var</span> countryByName = d3.map(),
+      countryIndex = -<span class="number">1</span>,
+      countryByIndex = [];
+
+  <span class="comment">// Compute a unique index for each country.</span>
+  data.forEach(<span class="function"><span class="keyword">function</span><span class="params">(d)</span> {</span>
+    <span class="keyword">if</span> (countryByName.has(d.creditor)) d.creditor = countryByName.get(d.creditor);
+    <span class="keyword">else</span> countryByName.set(d.creditor, d.creditor = {name: d.creditor, index: ++countryIndex});
+    <span class="keyword">if</span> (countryByName.has(d.debtor)) d.debtor = countryByName.get(d.debtor);
+    <span class="keyword">else</span> countryByName.set(d.debtor, d.debtor = {name: d.debtor, index: ++countryIndex});
+    d.debtor.risk = d.risk;
+  });
+
+  <span class="comment">// Initialize a square matrix of debits and credits.</span>
+  <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt;= countryIndex; i++) {
+    debits[i] = [];
+    credits[i] = [];
+    <span class="keyword">for</span> (<span class="keyword">var</span> j = <span class="number">0</span>; j &lt;= countryIndex; j++) {
+      debits[i][j] = <span class="number">0</span>;
+      credits[i][j] = <span class="number">0</span>;
+    }
+  }
+
+  <span class="comment">// Populate the matrices, and stash a map from index to country.</span>
+  data.forEach(<span class="function"><span class="keyword">function</span><span class="params">(d)</span> {</span>
+    debits[d.creditor.index][d.debtor.index] = d;
+    credits[d.debtor.index][d.creditor.index] = d;
+    countryByIndex[d.creditor.index] = d.creditor;
+    countryByIndex[d.debtor.index] = d.debtor;
+  });
+
+  <span class="comment">// For each diagram…</span>
+  svg.each(<span class="function"><span class="keyword">function</span><span class="params">(matrix, j)</span> {</span>
+    <span class="keyword">var</span> svg = d3.select(<span class="keyword">this</span>);
+
+    <span class="comment">// Compute the chord layout.</span>
+    layout.matrix(matrix);
+
+    <span class="comment">// Add chords.</span>
+    svg.selectAll(<span class="string">".chord"</span>)
+        .data(layout.chords)
+      .enter().append(<span class="string">"path"</span>)
+        .attr(<span class="string">"class"</span>, <span class="string">"chord"</span>)
+        .style(<span class="string">"fill"</span>, <span class="function"><span class="keyword">function</span><span class="params">(d)</span> {</span> <span class="keyword">return</span> fill(d.source.value.risk); })
+        .style(<span class="string">"stroke"</span>, <span class="function"><span class="keyword">function</span><span class="params">(d)</span> {</span> <span class="keyword">return</span> d3.rgb(fill(d.source.value.risk)).darker(); })
+        .attr(<span class="string">"d"</span>, chord)
+      .append(<span class="string">"title"</span>)
+        .text(<span class="function"><span class="keyword">function</span><span class="params">(d)</span> {</span> <span class="keyword">return</span> d.source.value.debtor.name + <span class="string">" owes "</span> + d.source.value.creditor.name + <span class="string">" $"</span> + format(d.source.value) + <span class="string">"B."</span>; });
+
+    <span class="comment">// Add groups.</span>
+    <span class="keyword">var</span> g = svg.selectAll(<span class="string">".group"</span>)
+        .data(layout.groups)
+      .enter().append(<span class="string">"g"</span>)
+        .attr(<span class="string">"class"</span>, <span class="string">"group"</span>);
+
+    <span class="comment">// Add the group arc.</span>
+    g.append(<span class="string">"path"</span>)
+        .style(<span class="string">"fill"</span>, <span class="function"><span class="keyword">function</span><span class="params">(d)</span> {</span> <span class="keyword">return</span> fill(countryByIndex[d.index].risk); })
+        .attr(<span class="string">"id"</span>, <span class="function"><span class="keyword">function</span><span class="params">(d, i)</span> {</span> <span class="keyword">return</span> <span class="string">"group"</span> + d.index + <span class="string">"-"</span> + j; })
+        .attr(<span class="string">"d"</span>, arc)
+      .append(<span class="string">"title"</span>)
+        .text(<span class="function"><span class="keyword">function</span><span class="params">(d)</span> {</span> <span class="keyword">return</span> countryByIndex[d.index].name + <span class="string">" "</span> + (j ? <span class="string">"owes"</span> : <span class="string">"is owed"</span>) + <span class="string">" $"</span> + format(d.value) + <span class="string">"B."</span>; });
+
+    <span class="comment">// Add the group label (but only for large groups, where it will fit).</span>
+    <span class="comment">// An alternative labeling mechanism would be nice for the small groups.</span>
+    g.append(<span class="string">"text"</span>)
+        .attr(<span class="string">"x"</span>, <span class="number">6</span>)
+        .attr(<span class="string">"dy"</span>, <span class="number">15</span>)
+        .filter(<span class="function"><span class="keyword">function</span><span class="params">(d)</span> {</span> <span class="keyword">return</span> d.value &gt; <span class="number">110</span>; })
+      .append(<span class="string">"textPath"</span>)
+        .attr(<span class="string">"xlink:href"</span>, <span class="function"><span class="keyword">function</span><span class="params">(d)</span> {</span> <span class="keyword">return</span> <span class="string">"#group"</span> + d.index + <span class="string">"-"</span> + j; })
+        .text(<span class="function"><span class="keyword">function</span><span class="params">(d)</span> {</span> <span class="keyword">return</span> countryByIndex[d.index].name; });
+  });
+});
+
+<span class="function"><span class="keyword">function</span> <span class="title">type</span><span class="params">(d)</span> {</span>
+  d.amount = +d.amount;
+  d.risk = +d.risk;
+  d.valueOf = value; <span class="comment">// for chord layout</span>
+  <span class="keyword">return</span> d;
+}
+
+<span class="function"><span class="keyword">function</span> <span class="title">value</span><span class="params">()</span> {</span>
+  <span class="keyword">return</span> <span class="keyword">this</span>.amount;
+}
+
+</span><span class="tag">&lt;/<span class="title">script</span>&gt;</span>
+</code></pre>
+    </div>
+    <div class="gist-source" data-key="debt.csv">
+      <h2>debt.csv<a name="debt.csv" class="anchor" href="http://bl.ocks.org/mbostock/1308257#debt.csv">#</a></h2>
+      <pre><code class="csv undefined">creditor,debtor,amount,risk
+Britain,France,22.4,3
+Britain,Greece,0.55,0
+Britain,Italy,26,0
+Britain,Portugal,19.4,0
+Britain,United States,345,1
+France,Germany,53.8,1
+France,Greece,53.9,0
+France,Ireland,17.3,0
+France,Italy,366,0
+France,Japan,7.73,1
+France,Portugal,18.3,0
+France,Spain,118,2
+France,United States,322,1
+Germany,Britain,321,1
+Germany,Greece,19.3,0
+Germany,Ireland,48.9,0
+Germany,Portugal,32.5,0
+Germany,Spain,57.6,2
+Germany,United States,324,1
+Ireland,Britain,12,1
+Ireland,Greece,0.34,0
+Ireland,Spain,6.38,2
+Italy,Germany,111,1
+Italy,Greece,3.22,0
+Italy,Ireland,2.83,0
+Italy,Portugal,0.87,0
+Japan,Britain,28.2,1
+Japan,Germany,88.5,1
+Japan,Greece,1.37,0
+Japan,Ireland,18.9,0
+Japan,Italy,38.8,0
+Japan,Portugal,2.18,0
+Japan,Spain,25.9,2
+Japan,United States,796,1
+Portugal,Greece,10.1,0
+Portugal,Ireland,3.77,0
+Portugal,United States,0.52,1
+Spain,Britain,326,1
+Spain,Greece,0.78,0
+Spain,Italy,9.79,0
+Spain,Portugal,62,0
+Spain,United States,163,1
+United States,Greece,3.1,0
+United States,Ireland,11.1,0
+United States,Italy,3.16,0
+</code></pre>
+    </div>
+  </div>
+  <div class="gist-license">
+    <h2>LICENSE<a name="license" class="anchor" href="http://bl.ocks.org/mbostock/1308257#license">#</a></h2>
+    Released under the <a target="_blank" href="https://opensource.org/licenses/GPL-3.0">GNU General Public License, version 3</a>.
+  </div>
+</div>
+
+<script src="d3.v3.min.js"></script>
+<script src="highlight.min.js"></script>
+<script>
+
+var gist = {"public":true,"sha":"aac285bbe5b8b45096a721a0c452415a0dfb98c0","files":{".block":{"language":null,"type":"text/plain","filename":".block","size":17,"sha":"703d310b399098a243a76a50bc209167e924cfd2"},"debt.csv":{"language":"CSV","type":"text/csv","filename":"debt.csv","size":1037,"sha":"82d0000caea1bb88c55287833060975c7405cb54"},"index.html":{"language":"HTML","type":"text/html","filename":"index.html","size":4645,"sha":"67f72e36351621d9f2db7d3dcc3b0777ef5aa0e0"},"readme.md":{"language":"Markdown","type":"text/plain","filename":"readme.md","size":1024,"sha":"072cb7c45689382f9542c6b9d695d91ee014c665"},"thumbnail.png":{"language":null,"type":"image/png","filename":"thumbnail.png","size":35258,"sha":"aa1fa8c2ddda32f457f24cabdbf5f7f050b5b779"}},"created_at":"2011-10-24T02:49:01Z","updated_at":"2016-02-23T05:39:43Z","description":"The Euro Debt Crisis","owner":{"login":"mbostock"},"id":"1308257"};
+
+var files = d3.values(gist.files);
+
+
+d3.selectAll(".gist-source")
+    .data(files, function(d) { return d ? d.filename : this.getAttribute("data-key"); })
+  .select("code")
+    .attr("class", function(d) { return d.language && (d.language === "JSON" ? "javascript" : d.language.toLowerCase()); })
+    .each(function(d) {
+      var code = d3.select(this);
+      d3.text("/" + (d.filename === "graph.html" ? "" : d.filename), function(error, content) {
+        if (error) content = "Sorry, an error occurred.";
+        code.text(content);
+        hljs.highlightBlock(code.node());
+      });
+    });
+
+</script>
+
+</body>

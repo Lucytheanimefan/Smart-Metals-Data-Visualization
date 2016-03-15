@@ -1,0 +1,14 @@
+{
+  "name": "Example_Visualization",
+  "version": "1.0.0",
+  "description": "To view this application, install Node.js using the following steps:",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.13.4"
+  }
+}
