@@ -13,33 +13,45 @@
       $(document).ready(function() {
         var sankey = new Sankey();
       
-        sankey.stack(0,["Goodwill NWNC", "Bottom","Even lower than bottom"]);
+        sankey.stack(0,["Goodwill NWNC", 
+          "Smart Metals Recycling1",
+          "Reworx Recycling"]);
         sankey.stack(1,["Merge"]);
-        sankey.stack(2,["Gordon Iron & Metal","Smart Metals Recycling","Bad","Indifferent","Not even indifferent"]);
+        sankey.stack(2,["Gordon Iron & Metal",
+          "Smart Metals Recycling",
+          "E-Tech Management",
+          "Gordell",
+          "Not even indifferent"]);
       
-        sankey.setData([["Goodwill NWNC",620,"Merge"],["Bottom",50,"Merge"],["Even lower than bottom",30,"Merge"],["Merge",250,"Gordon Iron & Metal"],["Merge",370, "Smart Metals Recycling"],["Merge",110,"Bad"]]);
-        sankey.setBubbles([["Bad",200]]);
+        sankey.setData([["Goodwill NWNC",620,"Merge"],
+          ["Smart Metals Recycling1",1319,"Merge"],
+          ["Reworx Recycling",570,"Merge"],
+          ["Merge",250,"Gordon Iron & Metal"],
+          ["Merge",370, "Smart Metals Recycling"],
+          ["Merge",1319,"E-Tech Management"],
+          ["Merge",570,"Gordell"]]);
+        sankey.setBubbles([["E-Tech Management",200]]);
         sankey.draw();
       
         setTimeout( function() {
           sankey.updateData([
             ["Goodwill NWNC",620*.1,"Merge"],
-            ["Even lower than bottom",30,"Merge"],
+            ["Smart Metals Recycling1",1319*.1,"Merge"],
+            ["Reworx Recycling",570*.1,"Merge"],
             ["Merge",250*.1,"Gordon Iron & Metal"],
             ["Merge",370*.1,"Smart Metals Recycling"],
-            ["Merge",30,"Bad"],
-            ["Merge",10,"Indifferent"],
-            ["Merge",10,"Not even indifferent"]
+            ["Merge",1319*.1,"E-Tech Management"],
+            ["Merge",570*.1,"Gordell"]
           ]);
-          sankey.setBubbles([["Bad",100]]);
+          sankey.setBubbles([["E-Tech Management",1319]]);
           sankey.redraw();        
         },1000)
     });
 
       
     </script>
-    <h1 style='width:1000px; text-align: center; margin-bottom: 0'>Inbound outbound animating Sankey Diagram</h1>
-    <div style='width:1000px; text-align: center; margin-top: 0'>Move your mouse over the diagram to show values</div>
+    <h1 style='width:1000px; text-align: center; margin-bottom: 0'>Inbound outbound animating sankey diagram</h1>
+    <div style='width:1000px; text-align: center; margin-top: 0'>Here is a Sankey chart showing the inbound and outbound netweights of several different companies using test values from the excel chart.</div>
     <div id='sankey' style="width:1000px;height:1000px">
       &nbsp;
     </div>
