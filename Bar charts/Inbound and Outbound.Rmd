@@ -1,0 +1,102 @@
+---
+title: "Inbound and Outbound"
+author: "Smart Metals"
+date: "March 19, 2016"
+output: html_document
+---
+
+```{r, results="hide",warning=FALSE}
+rm(list=ls())
+gc()
+library(data.table)
+setwd('C:/Users/Wusi/Desktop/data')
+list.files()
+data=fread('Search Results (02-29-2016).csv')
+colnames(data)[17]="Outweight"
+colnames(data)[10]="Inprice"
+colnames(data)[19]="Outprice"
+colnames(data)[14]="Outdate"
+```
+
+
+##In bound weight
+```{r results="hide", ,warning=FALSE}
+IW = data[, .(Inweight=sum(Inweight)), by=Indate]
+```
+
+###The distribution of In Bound Weight
+```{r ,warning=FALSE}
+max=max(IW[,Inweight])
+w=max/10
+summary(IW$Inweight)
+hist(IW[,Inweight], xlab="In-bound Weight", main="Distribution of Daily In-bound Weight", xlim = c(0,max*1.1))
+```
+
+
+###In bound weight changes over time:
+```{r ,warning=FALSE}
+IW2=IW[c(1:40),]
+max=max(IW[,Inweight])
+
+barplot(IW2[,Inweight],names.arg = IW2[,Indate],cex.names=0.6,ylab="In bound weight", main="Daily In Bound Weight", ylim = c(0,max*1.25))
+
+```
+
+##Out bound weight
+
+###The distribution of In Bound Weight
+```{r ,warning=FALSE}
+OW =  data[, .(Outweight=sum(Outweight)), by=Outdate]
+max2=max(OW[,Outweight])
+summary(OW$Outweight)
+hist(OW[,Outweight], xlab="Out-bound Weight", main="Distribution of Daily Out-bound Weight", xlim = c(0,max2*1.1))
+```
+
+###Out bound weight changes over time:
+```{r ,warning=FALSE}
+
+OW2=OW[c(1:40),]
+max2=max(OW[,Outweight])
+
+barplot(OW2[,Outweight],names.arg = OW2[,Outdate],cex.names=0.6,ylab="Out bound weight", main="Daily Out Bound Weight", ylim = c(0,max2*1.25))
+```
+
+##Compare In-bound weight and Out-bound weight:
+```{r ,warning=FALSE,results="hide"} 
+
+setkey(OW2, Outdate)
+setkey(IW2,Indate)
+Weights=merge(IW,OW,by.x= "Indate",by.y= "Outdate",all.x = T,all.y = T)
+Weights[is.na(Weights)] <- 0
+Weights2=Weights[1:20,]
+
+
+
+```
+
+
+```{r fig.width=15, fig.height=5 ,warning=FALSE}
+library(ggplot2)
+library(reshape2)
+df<- melt(Weights2)
+ggplot(df,aes(x=Indate,y=value,fill=variable))+
+  geom_bar(stat="identity",position="dodge")+
+  xlab("Date")+ylab("Weight")
+
+
+```
+
+##Total Storage changes over time: 
+*note: require additional data on the total storage at the start point. Here assume the storage starts at 10,000*
+```{r}
+Weights[,diff:=Inweight-Outweight]
+Weights[,Culm:=100000]
+
+Weights3=Weights[1:20,]
+for (i in 1:19)
+{ 
+  Weights3[[i+1,5]]=Weights[[i,5]]+Weights[[i+1,4]]
+  }
+barplot(Weights3[,Culm],names.arg = Weights3[,Indate],cex.names=0.6,ylab="Weight", main="Total  Storage", ylim = c(0,max2*1.25))
+```
+

@@ -1,0 +1,83 @@
+---
+title: "Cost and Revenue"
+author: "Smart Metals"
+date: "March 19, 2016"
+output: html_document
+---
+```{r, results="hide",warning=FALSE}
+rm(list=ls())
+gc()
+library(data.table)
+setwd('C:/Duke')
+list.files()
+data=fread('Search Results (02-29-2016).csv')
+colnames(data)[17]="Outweight"
+colnames(data)[10]="cost"
+colnames(data)[19]="revenue"
+colnames(data)[14]="Outdate"
+```
+##In-bound Cost
+```{r results="hide", ,warning=FALSE}
+IC = data[, .(cost=sum(cost)), by=Indate]
+```
+
+###The distribution of In Bound price
+```{r ,warning=FALSE}
+max=max(IC[,cost])
+w=max/10
+summary(IC$cost)
+hist(IC[,cost], xlab="In-bound Cost", main="Distribution of Daily In-bound Cost", xlim = c(0,max*1.1))
+```
+
+
+###In bound Cost changes over time:
+```{r ,warning=FALSE}
+IC2=IC[c(1:40),]
+max=max(IC[,cost])
+
+barplot(IC2[,cost],names.arg = IC2[,Indate],cex.names=0.6,ylab="In-bound Cost", main="Daily In Bound Cost", ylim = c(0,max*1.25))
+
+```
+
+##Out bound revenue
+
+###The distribution of In Bound revenue
+```{r ,warning=FALSE}
+OP =  data[, .(revenue=sum(revenue)), by=Outdate]
+max2=max(OP[,revenue])
+summary(OP$revenue)
+hist(OP[,revenue], xlab="Out-bound revenue", main="Distribution of Daily Out-bound revenue", xlim = c(0,max2*1.1))
+```
+
+###Out bound revenue changes over time:
+```{r ,warning=FALSE}
+
+OP2=OP[c(1:40),]
+max2=max(OP[,revenue])
+
+barplot(OP2[,revenue],names.arg = OP2[,Outdate],cex.names=0.6,ylab="Out bound revenue", main="Daily Out Bound revenue", ylim = c(0,max2*1.25))
+```
+
+##Compare In-bound cost and Out-bound revenue:
+```{r ,warning=FALSE,results="hide"} 
+
+setkey(OP2, Outdate)
+setkey(IC2,Indate)
+prices=merge(IC,OP,by.x= "Indate",by.y= "Outdate",all.x = T,all.y = T)
+prices2=prices[1:20,]
+
+
+```
+
+
+```{r fig.width=15, fig.height=5 ,warning=FALSE}
+library(ggplot2)
+library(reshape2)
+df<- melt(prices2)
+ggplot(df,aes(x=Indate,y=value,fill=variable))+
+  geom_bar(stat="identity",position="dodge")+
+  xlab("Date")+ylab("$")
+
+```
+
+
