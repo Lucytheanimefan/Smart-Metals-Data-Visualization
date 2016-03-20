@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+  <head>    
+  <title> Sample Page </title>
+  <script src="d3.min.js"></script>
+  <script src="PapaParse-4.1.2/papaparse.min.js"></script>
+  <script type="text/javascript" src="simple-excel.js"></script>
+</head>
+<body>
+<input type="file" id="fileInput" /><br/>
+        <input type="button" id="fileExport" />
+<h2> D3 Graphic </h2>
+  <script>	
+  var csvParser = new SimpleExcel.Parser.CSV();
+            var fileInput = document.getElementById('fileInput');
+            // parse when file loaded, then print the result to console
+            fileInput.addEventListener('change', function (e) 
+            {            
+                var file = e.target.files[0];
+                csvParser.loadFile(file, function () 
+                {
+                	var smartdata = csvParser.getSheet();
+         			var list = [];
+         			var inbound = [];
+         			var seen = [];
+         			var inboundsum = [];
+         			var outboundsum = [];
+                	for(i=0; i < smartdata.length; i++)
+                	{
+                		var temp = smartdata[i];
+                		//var list = [];
+                		list.push(temp[4]);
+                		inbound.push([temp[4], temp[10]]);
+
+                		//document.write(needle);
+                
+    	            };
+    	            var uniq = list
+ 					 .map((name) => {
+   					 return {count: 1, name: name}
+ 					 })
+ 					 .reduce((a, b) => {
+   					 a[b.name] = (a[b.name] || 0) + b.count
+  					  return a
+  					}, {})
+
+ 					 var sorted = Object.keys(uniq).sort((a, b) => uniq[a] < uniq[b])
+ 					 for (var i = 0, inboundsum; i < 100; i++) inboundsum.push(0);
+ 					 for (var i = 0, outboundsum; i < 100; i++) outboundsum.push(0);
+
+ 					 console.log(inboundsum)
+
+				   for(j=0; j < sorted.length; j++)
+                        {
+                            var tempuniqe = sorted[j];
+                            //console.log(tempuniqe)
+                            for(i=0; i < smartdata.length; i++)
+                                {
+                                	var temp = smartdata[i];
+                                	if (tempuniqe == temp[4])
+                                	{
+                                		//console.log(Number(temp[10]))
+                                    	inboundsum[j] += Number(temp[10]);
+                                    	outboundsum[j] += Number(temp[19]);
+                                	}
+                                }
+                        }
+
+					
+					//console.log(uniq)
+					console.log(inboundsum)
+					console.log(outboundsum)
+					//console.log(sorted)
+
+            	})
+            });
+            
+
+           	//var red = file[40];
+            //document.write(smartmetdata);
+            //console.log(red);
+
+  </script>
+</body>
+</html>
