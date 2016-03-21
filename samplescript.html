@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
   <head>    
@@ -15,7 +16,7 @@
 <div id="viz"></div>
   <script>	
   var csvParser = new SimpleExcel.Parser.CSV();
-            var fileInput = document.getElementById('fileInput');
+            var fileInput = document.getElementById('fileInput'); //input smart metal data files
        
             fileInput.addEventListener('change', function (e) 
             {            
@@ -23,21 +24,23 @@
                 csvParser.loadFile(file, function () 
                 {
                 	var smartdata = csvParser.getSheet();
-         			list = [];
-         			var inbound = [];
-         			var inboundsum = [];
-         			var outboundsum = [];
-         			var profits = [];
-         			var data = [];
+         			var list = [];  //list of inbound accounts
+         			var outlist = []; //list of outbound accounts
+         			var inbound = [];  //list of inbound accounts and inbound prices 
+         			var inboundsum = []; //total inbound price for each unique account
+         			var outboundsum = []; //total outbound price for each unique account
+         			var profits = []; //total outbound price - total inbound price for each unique account
+         			var data = []; // format for export into pie chart
          			var sum = 0;
                 	for(i=0; i < smartdata.length; i++)
                 	{
                 		var temp = smartdata[i];
                 		list.push(temp[4]);
+                		outlist.push(temp[13]);
                 		inbound.push([temp[4], temp[10]]);         		
                 
     	            };
-    	            var uniq = list
+    	            var uniq = list  //create list of each unique inbound account
  					 .map((name) => {
    					 return {count: 1, name: name}
  					 })
@@ -46,14 +49,25 @@
   					  return a
   					}, {})
 
- 					 var sorted = Object.keys(uniq).sort((a, b) => uniq[a] < uniq[b])
+ 					 var uniqout = outlist  //create list of each unique outbound account
+ 					 .map((name) => {
+   					 return {count: 1, name: name}
+ 					 })
+ 					 .reduce((a, b) => {
+   					 a[b.name] = (a[b.name] || 0) + b.count
+  					  return a
+  					}, {})
+
+ 					 var sorted = Object.keys(uniq).sort((a, b) => uniq[a] < uniq[b]) //order list of each unique inbound account
+ 					 var sortedout  = Object.keys(uniq).sort((a, b) => uniq[a] < uniq[b]) //order list of each unique outbound account
+
  					 for (var i = 0, inboundsum; i < sorted.length; i++) inboundsum.push(0);
  					 for (var i = 0, outboundsum; i < sorted.length; i++) outboundsum.push(0);
  					 for (var i = 0, profits; i < sorted.length; i++) profits.push(0);
 
  					 console.log(inboundsum.length)
 
-				   for(j=0; j < sorted.length; j++)
+				   for(j=0; j < sorted.length; j++) //sum inbound prices for each inbound account
                         {
                             var tempuniqe = sorted[j];
                             
@@ -64,24 +78,38 @@
                                 	{
                                 		
                                     	inboundsum[j] += Number(temp[10]);
-                                    	outboundsum[j] += Number(temp[19]);
                                 	}
                                 }
                         if (isNaN(inboundsum[j])) inboundsum[j] = 0;       
-                        if (isNaN(outboundsum[j])) outboundsum[j] = 0; 
-                        sum += outboundsum[j];
+						}
+
+						 for(j=0; j < sortedout.length; j++) //sum outbound prices for each unique account
+                        {
+                            var tempuniqe = sortedout[j];
+                            
+                            for(i=0; i < smartdata.length; i++)
+                                {
+                                	var temp = smartdata[i];
+                                	if (tempuniqe == temp[4])
+                                	{
+                                		
+                                    	outboundsum[j] += Number(temp[19]);
+                                	}
+                                }      
+                        if (isNaN(outboundsum[j])) outboundsum[j] = 0;   
 
 						profits[j] = outboundsum[j] - inboundsum[j];   
-						data.push({label:sorted[j], value:profits[j]});
+						data.push({label:sorted[j], value:profits[j]}); //create format for pie chart
+						sum += outboundsum[j];
 						}
-					console.log(uniq);
+					
 					console.log(inboundsum);
 					console.log(outboundsum);
 					console.log(profits);
 					console.log(data);
-					console.log(sum);
+					//console.log(sum);
 
- 				d3plus.viz()
+ 				d3plus.viz() //pie chart visualization 
    				 .container("#viz")
    				 .data(data)
   				  .type("pie")
@@ -90,7 +118,7 @@
   				  .draw()
 
             	});
-            });
+            }); 
             
 
   </script>
